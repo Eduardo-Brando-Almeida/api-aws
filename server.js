@@ -405,11 +405,22 @@ app.get('/buckets/:bucketName', async (req, res) => {
  *         description: Arquivo enviado com sucesso
  */
 //Utilizar alguma lib para fazer o upload/strem de arquivos, sugestão: multer
-app.post('/buckets/:bucketName/upload', async (req, res) => {
+app.post('/buckets/:bucketName/upload', upload.single('file'), async (req, res) => {
+    const { bucketName } = req.params;
+
+    const params = {
+        Bucket: bucketName,
+        Key: req.file.originalname,
+        Body: req.file.buffer,
+    };
+
     try {
-        logInfo('Upload efetuado', req, data.Buckets);
+        const result = await s3.upload(params).promise();
+        logInfo('Upload efetuado com sucesso', req, result);
+        res.status(200).json({ message: 'Arquivo enviado com sucesso', data: result });
     } catch (error) {
         logError("Erro ao efetuar upload", req, error);
+        res.status(500).json({ error: 'Falha ao fazer upload', details: error });
     }
 });
 
