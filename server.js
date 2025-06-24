@@ -448,10 +448,20 @@ app.post('/buckets/:bucketName/upload', upload.single('file'), async (req, res) 
  *         description: Arquivo deletado com sucesso
  */
 app.delete('/buckets/:bucketName/file/:fileName', async (req, res) => {
+    const { bucketName, fileName } = req.params;
+
+    const params = {
+        Bucket: bucketName,
+        Key: fileName,
+    };
+
     try {
-        logInfo('Objeto removido', req, data.Buckets);
+        await s3.deleteObject(params).promise();
+        logInfo('Arquivo deletado do bucket com sucesso', req);
+        res.status(200).json({ message: 'Arquivo deletado com sucesso' });
     } catch (error) {
-        logError("Erro ao remover objeto", req, error);
+        logError("Erro ao remover objeto do bucket", req, error);
+        res.status(500).json({ error: 'Erro ao deletar arquivo', details: error });
     }
 });
 //#endregion
