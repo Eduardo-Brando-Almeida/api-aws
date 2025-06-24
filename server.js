@@ -13,6 +13,9 @@ const { logInfo, logError } = require('./logger');
 
 app.use(express.json());
 
+const multer = require('multer');
+const upload = multer();
+
 /**
 * @swagger
 * tags:
