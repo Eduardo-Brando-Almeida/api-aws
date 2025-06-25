@@ -54,6 +54,8 @@ app.use('/swagger', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 *     description: Operações de CRUD para usuários no MongoDb.
 *   - name: Buckets
 *     description: Operações de Listar buckets, upload e remoção de arquivo para um bucket S3.
+*   - name: CRUD Produtos
+*     description: Operações de CRUD para produtos no MySQL.
 */
 
 
@@ -499,10 +501,13 @@ app.delete('/buckets/:bucketName/file/:fileName', async (req, res) => {
 
 //MySQL
 
+// Criar DB e tabela
 /**
  * @swagger
  * /init-db:
  *   post:
+ *     tags:
+ *       - CRUD Produtos
  *     summary: Cria o banco de dados e a tabela produto
  *     responses:
  *       200:
@@ -518,8 +523,10 @@ app.post('/init-db', async (req, res) => {
         Preco DECIMAL(10,2) NOT NULL
       );`;
     await pool.query(createDB);
+    logInfo('Banco e tabela criados com sucesso', req);
     res.send('Banco de dados e tabela criados com sucesso.');
   } catch (err) {
+    logError('Erro ao criar banco ou tabela', req, err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -528,6 +535,8 @@ app.post('/init-db', async (req, res) => {
  * @swagger
  * /produtos:
  *   get:
+ *     tags:
+ *       - CRUD Produtos
  *     summary: Lista todos os produtos
  *     responses:
  *       200:
@@ -537,8 +546,10 @@ app.get('/produtos', async (req, res) => {
   try {
     await pool.query(`USE \`${DB_NAME}\``);
     const [rows] = await pool.query('SELECT * FROM produto');
+    logInfo('Produtos listados com sucesso', req, rows);
     res.json(rows);
   } catch (err) {
+    logError('Erro ao listar produtos', req, err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -547,6 +558,8 @@ app.get('/produtos', async (req, res) => {
  * @swagger
  * /produtos/{id}:
  *   get:
+ *     tags:
+ *       - CRUD Produtos
  *     summary: Busca um produto pelo ID
  *     parameters:
  *       - in: path
@@ -563,10 +576,15 @@ app.get('/produtos', async (req, res) => {
 app.get('/produtos/:id', async (req, res) => {
   try {
     await pool.query(`USE \`${DB_NAME}\``);
-    const [rows] = await pool.query('SELECT * FROM produto WHERE id = ?', [req.params.id]);
-    if (rows.length === 0) return res.status(404).json({ error: 'Produto não encontrado' });
+    const [rows] = await pool.query('SELECT * FROM produto WHERE Id = ?', [req.params.id]);
+    if (rows.length === 0) {
+      logInfo('Produto não encontrado', req);
+      return res.status(404).json({ error: 'Produto não encontrado' });
+    }
+    logInfo('Produto encontrado', req, rows[0]);
     res.json(rows[0]);
   } catch (err) {
+    logError('Erro ao buscar produto por ID', req, err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -575,6 +593,8 @@ app.get('/produtos/:id', async (req, res) => {
  * @swagger
  * /produtos:
  *   post:
+ *     tags:
+ *       - CRUD Produtos
  *     summary: Cria um novo produto
  *     requestBody:
  *       required: true
@@ -605,8 +625,10 @@ app.post('/produtos', async (req, res) => {
       'INSERT INTO produto (Nome, Descricao, Preco) VALUES (?, ?, ?)',
       [Nome, Descricao, Preco]
     );
+    logInfo('Produto criado', req, { id: result.insertId });
     res.status(201).json({ id: result.insertId });
   } catch (err) {
+    logError('Erro ao criar produto', req, err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -615,6 +637,8 @@ app.post('/produtos', async (req, res) => {
  * @swagger
  * /produtos/{id}:
  *   put:
+ *     tags:
+ *       - CRUD Produtos
  *     summary: Atualiza um produto
  *     parameters:
  *       - in: path
@@ -653,9 +677,14 @@ app.put('/produtos/:id', async (req, res) => {
       'UPDATE produto SET Nome = ?, Descricao = ?, Preco = ? WHERE Id = ?',
       [Nome, Descricao, Preco, req.params.id]
     );
-    if (result.affectedRows === 0) return res.status(404).json({ error: 'Produto não encontrado' });
+    if (result.affectedRows === 0) {
+      logInfo('Produto para atualizar não encontrado', req);
+      return res.status(404).json({ error: 'Produto não encontrado' });
+    }
+    logInfo('Produto atualizado', req, { id: req.params.id });
     res.json({ message: 'Produto atualizado com sucesso' });
   } catch (err) {
+    logError('Erro ao atualizar produto', req, err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -664,6 +693,8 @@ app.put('/produtos/:id', async (req, res) => {
  * @swagger
  * /produtos/{id}:
  *   delete:
+ *     tags:
+ *       - CRUD Produtos
  *     summary: Deleta um produto
  *     parameters:
  *       - in: path
@@ -681,9 +712,14 @@ app.delete('/produtos/:id', async (req, res) => {
   try {
     await pool.query(`USE \`${DB_NAME}\``);
     const [result] = await pool.query('DELETE FROM produto WHERE Id = ?', [req.params.id]);
-    if (result.affectedRows === 0) return res.status(404).json({ error: 'Produto não encontrado' });
+    if (result.affectedRows === 0) {
+      logInfo('Produto para deletar não encontrado', req);
+      return res.status(404).json({ error: 'Produto não encontrado' });
+    }
+    logInfo('Produto deletado com sucesso', req, { id: req.params.id });
     res.json({ message: 'Produto deletado com sucesso' });
   } catch (err) {
+    logError('Erro ao deletar produto', req, err);
     res.status(500).json({ error: err.message });
   }
 });
