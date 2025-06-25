@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const app = express();
+app.use(express.json());
 //BD
 const mongoose = require('mongoose');
 //SQL
@@ -14,32 +15,31 @@ const AWS = require('aws-sdk');
 //Log
 const { logInfo, logError } = require('./logger');
 
-app.use(express.json());
-
 const multer = require('multer');
 const upload = multer();
-
-const pool = mysql.createPool({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  port: process.env.DB_PORT,
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0,
-  multipleStatements: true
-}).promise();
-
-const DB_NAME = process.env.DB_NAME;
 
 const swaggerOptions = {
   swaggerDefinition: {
     openapi: '3.0.0',
     info: {
-      title: 'API Produto',
+      title: 'API Geral - MongoDB, MySQL e AWS S3',
       version: '1.0.0',
-      description: 'CRUD de produtos com MySQL + endpoint de inicialização do banco'
-    }
+      description: 'API completa com operações CRUD para MongoDB (usuários), MySQL (produtos) e AWS S3 (buckets)'
+    },
+    tags: [
+      {
+        name: 'CRUD MongoDb',
+        description: 'Operações de CRUD para usuários no MongoDb'
+      },
+      {
+        name: 'Produtos',
+        description: 'Operações de CRUD para produtos em MySQL'
+      },
+      {
+        name: 'Buckets',
+        description: 'Operações de Listar buckets, upload e remoção de arquivo para um bucket S3'
+      }
+    ]
   },
   apis: ['server.js']
 };
@@ -52,10 +52,6 @@ app.use('/swagger', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 * tags:
 *   - name: CRUD MongoDb
 *     description: Operações de CRUD para usuários no MongoDb.
-*   - name: Buckets
-*     description: Operações de Listar buckets, upload e remoção de arquivo para um bucket S3.
-*   - name: CRUD Produtos
-*     description: Operações de CRUD para produtos no MySQL.
 */
 
 
@@ -362,6 +358,13 @@ const s3 = new AWS.S3();
 
 /**
  * @swagger
+ * tags:
+ *   - name: Buckets
+ *     description: Operações de Listar buckets, upload e remoção de arquivo para um bucket S3.
+ */
+
+/**
+ * @swagger
  * /buckets:
  *   get:
  *     summary: Lista todos os buckets
@@ -499,9 +502,28 @@ app.delete('/buckets/:bucketName/file/:fileName', async (req, res) => {
 });
 //#endregion
 
-//MySQL
+//#region MySQL - CRUD Produtos
 
-// Criar DB e tabela
+const pool = mysql.createPool({
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  port: process.env.DB_PORT,
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0,
+  multipleStatements: true
+}).promise();
+
+const DB_NAME = process.env.DB_NAME;
+
+/**
+ * @swagger
+ * tags:
+ *   - name: Produtos
+ *     description: Operações de CRUD para produtos em MySQL.
+ */
+
 /**
  * @swagger
  * /init-db:
@@ -723,7 +745,7 @@ app.delete('/produtos/:id', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+//#endregion
 
-
-swaggerDocs(app);
-app.listen(3000, () => console.log('Servidor rodando na porta 3000'));
+// Iniciar servidor
+app.listen(3000, () => console.log('Servidor rodando na porta 3000 - http://localhost:3000/swagger'));
