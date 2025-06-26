@@ -32,12 +32,12 @@ const swaggerOptions = {
         description: 'Operações de CRUD para usuários no MongoDb'
       },
       {
-        name: 'Produtos',
-        description: 'Operações de CRUD para produtos em MySQL'
-      },
-      {
         name: 'Buckets',
         description: 'Operações de Listar buckets, upload e remoção de arquivo para um bucket S3'
+      },
+      {
+        name: 'CRUD Produtos',
+        description: 'Operações de CRUD para produtos em MySQL'
       }
     ]
   },
@@ -505,22 +505,22 @@ app.delete('/buckets/:bucketName/file/:fileName', async (req, res) => {
 //#region MySQL - CRUD Produtos
 
 const pool = mysql.createPool({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  port: process.env.DB_PORT,
+  host: process.env.CNN_MYSQL_DB_HOST,
+  user: process.env.CNN_MYSQL_DB_USER,
+  password: process.env.CNN_MYSQL_DB_PASSWORD,
+  port: process.env.CNN_MYSQL_DB_PORT,
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
   multipleStatements: true
 }).promise();
 
-const DB_NAME = process.env.DB_NAME;
+const DB_NAME = process.env.CNN_MYSQL_DB_NAME;
 
 /**
  * @swagger
  * tags:
- *   - name: Produtos
+ *   - name: CRUD Produtos
  *     description: Operações de CRUD para produtos em MySQL.
  */
 
