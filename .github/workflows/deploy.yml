@@ -243,10 +243,15 @@ jobs:
             docker pull $IMAGE
 
             echo "🚀 Subindo novo container... $REPO_NAME $IMAGE"
-            docker run -d -p 3000:3000 --name $REPO_NAME \
+            docker run -d -p 3000:3000 \
+              --name $REPO_NAME \
               -e MONGO_URI=${{ secrets.MONGO_URI }} \
-              -e DB_HOST=${{ secrets.DB_HOST }} \
-              -e DB_USER=${{ secrets.DB_USER }} \
-              -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
-              -e DB_NAME=${{ secrets.DB_NAME }} \
+              -e CNN_MYSQL_DB_HOST=${{ secrets.CNN_MYSQL_DB_HOST }} \
+              -e CNN_MYSQL_DB_USER=${{ secrets.CNN_MYSQL_DB_USER }} \
+              -e CNN_MYSQL_DB_PASSWORD=${{ secrets.CNN_MYSQL_DB_PASSWORD }} \
+              -e CNN_MYSQL_DB_PORT=${{ secrets.CNN_MYSQL_DB_PORT }} \
+              -e CNN_MYSQL_DB_NAME=${{ secrets.CNN_MYSQL_DB_NAME }} \
+              -e REGION=${{ secrets.REGION }} \
+              -e LOG_GROUP_NAME=${{ secrets.LOG_GROUP_NAME }} \
+              -e LOG_STREAM_NAME=${{ secrets.LOG_STREAM_NAME }} \
               $IMAGE
