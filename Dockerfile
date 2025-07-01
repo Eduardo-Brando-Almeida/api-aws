@@ -13,9 +13,6 @@ RUN npm install --force
 # Copia o restante dos arquivos da aplicação
 COPY . .
 
-# Gera a build da aplicação React (se aplicável)
-RUN npm run build
-
 # Etapa final para rodar com Node.js
 FROM node:18-alpine
 
