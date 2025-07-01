@@ -236,7 +236,7 @@ jobs:
               echo "ℹ️ Nenhum container atual encontrado com nome: $REPO_NAME"
             fi
 
-            echo "🧹 Removendo imagem local antiga, se existir..."
+            echo "🧹Removendo imagem local antiga, se existir..."
             docker rmi -f "$IMAGE" || echo "ℹ️ Nenhuma imagem antiga encontrada com a tag: $IMAGE"
 
             echo "⬇️ Baixando nova imagem..."
