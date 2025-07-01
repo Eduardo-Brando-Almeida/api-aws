@@ -223,14 +223,12 @@ jobs:
 
             echo "🔄 Iniciando deploy da imagem: $IMAGE"
 
-            # Garantir que o Docker esteja disponível
             sudo yum update -y || sudo apt update -y
             sudo systemctl start docker || sudo service docker start
 
-            # Verificar container existente
             CONTAINER_ID=$(docker ps -aq --filter "name=$REPO_NAME")
             if [ -n "$CONTAINER_ID" ]; then
-              echo "⚙️ Container atual em existente:"
+              echo "⚙️ Container atual existente:"
               docker inspect --format='{{.Config.Image}}' $CONTAINER_ID
               echo "🛑 Parando e removendo container atual..."
               docker rm -f $REPO_NAME || true
@@ -245,4 +243,10 @@ jobs:
             docker pull $IMAGE
 
             echo "🚀 Subindo novo container... $REPO_NAME $IMAGE"
-            docker run -d -p 3000:3000 --name $REPO_NAME $IMAGE
+            docker run -d -p 3000:3000 --name $REPO_NAME \
+              -e MONGO_URI=${{ secrets.MONGO_URI }} \
+              -e DB_HOST=${{ secrets.DB_HOST }} \
+              -e DB_USER=${{ secrets.DB_USER }} \
+              -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
+              -e DB_NAME=${{ secrets.DB_NAME }} \
+              $IMAGE
