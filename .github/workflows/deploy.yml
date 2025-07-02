@@ -243,7 +243,7 @@ jobs:
             docker pull $IMAGE
 
             echo "🚀 Subindo novo container... $REPO_NAME $IMAGE"
-            docker run -d -p 3000:3000 \
+            docker run -d -p 3000:3000 --memory=512m \
               --name $REPO_NAME \
               -e MONGO_URI=${{ secrets.MONGO_URI }} \
               -e CNN_MYSQL_DB_HOST=${{ secrets.CNN_MYSQL_DB_HOST }} \
